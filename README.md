@@ -98,8 +98,17 @@ debugger restores touch — that view is the blocker.
 
 ## Workaround
 
-The `workaround` branch of this repo adds a local Expo module with an ObjC
-category returning `+shouldBeRecycled = NO` for `RCTViewComponentView`:
+**You are on the `workaround` branch** — it adds
+`modules/fabric-view-recycling-fix/`, a local Expo module (autolinked from
+`modules/`) with an ObjC category returning `+shouldBeRecycled = NO` for
+`RCTViewComponentView`. After switching branches, regenerate the native
+project so the module gets linked:
+
+```bash
+npx expo prebuild -p ios --clean && npx expo run:ios
+```
+
+The category:
 
 ```objc
 @implementation RCTViewComponentView (DisableRecycling)
