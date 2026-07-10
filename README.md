@@ -26,6 +26,7 @@ verified on the iOS simulator (iPhone 17 Pro, iOS 26.2).
 | react-native-screens | **4.25.2** |
 | expo / expo-router | 56.0.15 / 56.2.14 |
 | @legendapp/list | 3.3.0 (virtualized lists — the churn source) |
+| react-native-gesture-handler | 3.0.1 (+ react-native-nitro-modules 0.35.9, its native runtime) |
 | expo-video | 56.1.4 (the victim screen's native view; not believed to be load-bearing) |
 | iOS | 26.x (simulator + device), Xcode 26.3 |
 
