@@ -18,6 +18,18 @@ disabling Fabric view recycling app-wide (see [Workaround](#workaround))
 eliminates it completely: 3/3 open→exit→re-open cycles pass in one process,
 verified on the iOS simulator (iPhone 17 Pro, iOS 26.2).
 
+> **Status — not yet firing in this minimal form.** This harness replicates
+> the production versions, navigation shape (nested tabs + multi-screen
+> `dismissTo`), virtualized-list churn (live: rotating ids + structural
+> variants every 250ms), and instrumentation — and in the author's simulator
+> runs (7 hand-driven entries across flat, nested, and live-churn configs,
+> HID taps) every entry stayed alive. The production app on the **same
+> versions** reproduces deterministically, so one or more load-bearing
+> ingredients are still missing from this reduction — see the
+> [fidelity ladder](#fidelity-ladder-if-it-doesnt-fire). The instrumentation
+> (probe, tally, driver) is verified end-to-end; treat this repo as the
+> scaffold the missing trigger gets pinned into.
+
 ## Environment
 
 | | |
@@ -43,12 +55,20 @@ npx expo run:ios   # prebuild + pod install + build; use an iOS simulator or dev
 
 ## Reproduction protocol
 
-The app is a 3-screen native stack mirroring the production flow:
+The app mirrors the production topology — a root stack holding a tabs
+navigator plus content screens pushed above it, so the `dismissTo` unwinds
+the pushed screens back INTO the tabs sub-stack (multi-screen removal across
+a navigator boundary). All lists churn live (rotating ids + structural
+variants every 250ms), so native views flow through the recycle pool during
+the transitions, not just at mount/unmount boundaries:
 
 ```
-Home (LegendList, 80 rows) ──push──▶ Course (LegendList, 60 rows) ──push──▶ Video (VideoView + overlay)
-   ▲                                                                            │
-   └──────────────────────── dismissTo (pops BOTH screens) ◀────────────────────┘
+Root Stack
+├── (tabs)  ── Repro tab (LegendList, 80 rows, live churn) · Browse tab (70 rows, live churn)
+├── course  ── LegendList, 60 rows, live churn
+└── video   ── VideoView + overlay (the victim)
+
+(tabs) ──push──▶ course ──push──▶ video ──dismissTo──▶ back into (tabs)  [pops BOTH]
 ```
 
 1. Launch the app **fresh** (kill it first if already running).
@@ -157,15 +177,30 @@ way, and JS-level list recycling (LegendList/FlashList) is unaffected.
 
 ## Fidelity ladder (if it doesn't fire)
 
-This repro is a minimalization of a production app. If your runs pass, the
-next fidelity steps that differ from production, in order:
+This repro is a minimalization of a production app. Already included in the
+baseline: exact dependency versions, nested tabs + multi-screen `dismissTo`
+across a navigator boundary, live list churn overlapping the transitions,
+`recycleItems` LegendLists, VideoView victim screen. Still differing from
+production, in rough order of suspicion:
 
-1. **Nested navigators** — production pops from a `(pages)` stack back into a
-   `(tabs)` sub-stack; this repro uses a single flat stack.
-2. **More screens/lists in the dismissed span** (3+ screens popped at once).
-3. **Reanimated 4 + heavier native view variety** (production runs
-   react-native-reanimated 4.4.1; excluded here for minimalism).
-4. **Scroll the lists before navigating** (deepens the recycle pools).
+1. **Reanimated 4 + heavier native view variety** (production runs
+   react-native-reanimated 4.4.1 with animated components on most screens;
+   excluded here for minimalism).
+2. **Heavier subtrees / real content** — production rows are hundreds of
+   views deep with images resolving asynchronously; these rows are ~10 plain
+   views.
+3. **Scroll state + scroll during navigation** (deepens and reorders the
+   recycle pools).
+4. **More screens/lists in the dismissed span** (3+ screens popped at once).
+5. **Real device hardware timing** (the production bug was discovered on
+   device; the deterministic sim repro used the production app itself).
+
+The subtractive path is guaranteed to converge where the additive one
+hasn't yet: the production app reproduces deterministically, so stripping it
+down chunk by chunk until the repro stops firing pins the exact load-bearing
+ingredient set. That bisect (which already isolated the list-virtualization
+chunk as necessary) is how the missing ingredient will be identified and
+ported here.
 
 Issues/PRs welcome — the goal of this repo is to give upstream a
 deterministic, minimal trigger.

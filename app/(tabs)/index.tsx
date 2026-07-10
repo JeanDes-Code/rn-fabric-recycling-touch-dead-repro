@@ -1,18 +1,20 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LegendList } from '@legendapp/list/react-native';
 import { router } from 'expo-router';
-import { driver, summarizeResults, useDriver } from '../lib/driver';
-import { makeItems, Row, RowItem } from '../lib/rows';
+import { driver, summarizeResults, useDriver } from '../../lib/driver';
+import { Row, RowItem } from '../../lib/rows';
+import { useChurningItems } from '../../lib/churn';
 
 // "Home" — stands in for the production app's Learn screen: a virtualized
 // list (LegendList, JS-level recycling on) whose rows churn plain native
 // views through Fabric's recycle pool every time this screen mounts/unmounts
 // around navigation.
 
-const ITEMS = makeItems(80, ['#7c5cff', '#ff5c7c', '#5cff9d', '#ffb75c', '#5cc8ff']);
+const PALETTE = ['#7c5cff', '#ff5c7c', '#5cff9d', '#ffb75c', '#5cc8ff'];
 
 export default function HomeScreen() {
   const d = useDriver();
+  const items = useChurningItems(80, PALETTE);
   return (
     <View style={s.root}>
       <View style={s.panel}>
@@ -50,7 +52,7 @@ export default function HomeScreen() {
         </Text>
       </View>
       <LegendList
-        data={ITEMS}
+        data={items}
         renderItem={({ item }: { item: RowItem }) => (
           <Row item={item} subtitle="home list — churns the recycle pool" />
         )}

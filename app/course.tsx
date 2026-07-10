@@ -1,16 +1,18 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LegendList } from '@legendapp/list/react-native';
 import { router } from 'expo-router';
-import { makeItems, Row, RowItem } from '../lib/rows';
+import { Row, RowItem } from '../lib/rows';
+import { useChurningItems } from '../lib/churn';
 
 // Mid screen — stands in for the production app's course/quest list: a second
 // virtualized list between home and the victim screen, so the
 // dismissTo-from-video pops TWO screens at once (the multi-screen removal is
 // part of the trigger).
 
-const ITEMS = makeItems(60, ['#0ea5e9', '#f59e0b', '#10b981', '#ef4444']);
+const PALETTE = ['#0ea5e9', '#f59e0b', '#10b981', '#ef4444'];
 
 export default function CourseScreen() {
+  const items = useChurningItems(60, PALETTE);
   return (
     <View style={s.root}>
       <View style={s.panel}>
@@ -19,7 +21,7 @@ export default function CourseScreen() {
         </Pressable>
       </View>
       <LegendList
-        data={ITEMS}
+        data={items}
         renderItem={({ item }: { item: RowItem }) => (
           <Row item={item} subtitle="course list — more pool churn" />
         )}

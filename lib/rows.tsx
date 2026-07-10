@@ -10,6 +10,7 @@ export interface RowItem {
   id: string;
   index: number;
   tint: string;
+  variant?: boolean;
 }
 
 export function makeItems(count: number, palette: string[]): RowItem[] {
@@ -23,10 +24,18 @@ export function makeItems(count: number, palette: string[]): RowItem[] {
 export function Row({ item, subtitle }: { item: RowItem; subtitle: string }) {
   return (
     <View style={s.row}>
-      <View style={[s.icon, { backgroundColor: item.tint }]} />
+      <View style={[s.icon, { backgroundColor: item.tint }]}>
+        {item.variant ? <View style={s.badge} /> : null}
+      </View>
       <View style={s.body}>
         <Text style={s.title}>Item {item.index}</Text>
         <Text style={s.sub}>{subtitle}</Text>
+        {item.variant ? (
+          <View style={s.tagRow}>
+            <View style={s.tag} />
+            <View style={[s.tag, s.tagWide]} />
+          </View>
+        ) : null}
         <View style={s.barTrack}>
           <View style={[s.barFill, { width: `${(item.index * 37) % 100}%` }]} />
         </View>
@@ -66,4 +75,16 @@ const s = StyleSheet.create({
     borderColor: '#bbb',
     transform: [{ rotate: '45deg' }],
   },
+  badge: {
+    position: 'absolute',
+    top: -3,
+    right: -3,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#111',
+  },
+  tagRow: { flexDirection: 'row', gap: 4, marginTop: 4 },
+  tag: { width: 28, height: 8, borderRadius: 4, backgroundColor: '#ddd' },
+  tagWide: { width: 44 },
 });
