@@ -1,15 +1,19 @@
 {
   "expo": {
-    "name": "rn-fabric-recycling-touch-dead-repro",
+    "name": "Fabric Recycling Repro",
     "slug": "rn-fabric-recycling-touch-dead-repro",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "scheme": "fabricrepro",
+    "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "dev.jeandesauw.fabricrecyclingrepro"
     },
     "android": {
+      "package": "dev.jeandesauw.fabricrecyclingrepro",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -20,6 +24,10 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-video"
+    ]
   }
 }
